@@ -20,6 +20,11 @@ const usersReducer = (state = [], action) => {
   if (action.type === "DELETE_USER") {
     return state.filter((user) => user.id !== action.user.id);
   }
+  if (action.type === "UPDATE_USER") {
+    return state.map((user) =>
+      user.id !== action.user.id ? user : action.user
+    );
+  }
   if (action.type === "SET_USERS") {
     return action.users;
   }
@@ -113,6 +118,13 @@ const deleteUser = (user) => {
   };
 };
 
+const updateUser = (user) => {
+  return async (dispatch) => {
+    user = (await axios.put(`/api/users/${user.id}`, user)).data;
+    dispatch({ type: "UPDATE_USER", user });
+  };
+};
+
 const store = createStore(reducer, applyMiddleware(logger, thunk));
 
 export {
@@ -124,6 +136,7 @@ export {
   createUser,
   removeThingFromUser,
   deleteUser,
+  updateUser,
 };
 
 export default store;
