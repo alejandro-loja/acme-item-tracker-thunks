@@ -53,6 +53,34 @@ const reducer = combineReducers({
   view: viewReducer,
 });
 
+const setView = (view) => {
+  return (dispatch) => {
+    dispatch({ type: "SET_VIEW", view });
+  };
+};
+
+const loadData = () => {
+  return async (dispatch) => {
+    const responses = await Promise.all([
+      axios.get("/api/users"),
+      axios.get("/api/things"),
+    ]);
+    dispatch({
+      type: "SET_USERS",
+      users: responses[0].data,
+    });
+    dispatch({
+      type: "SET_THINGS",
+      things: responses[1].data,
+    });
+  };
+};
+const createThing = (thing) => {
+  return async (dispatch) => {
+    thing = (await axios.post("/api/things", thing)).data;
+    dispatch({ type: "CREATE_THING", thing });
+  };
+};
 const updateThing = (thing) => {
   return async (dispatch) => {
     thing = (await axios.put(`/api/things/${thing.id}`, thing)).data;
@@ -65,16 +93,37 @@ const deleteThing = (thing) => {
     dispatch({ type: "DELETE_THING", thing });
   };
 };
-
 const createUser = (user) => {
   return async (dispatch) => {
     user = (await axios.post("/api/users", user)).data;
     dispatch({ type: "CREATE_USER", user });
   };
 };
+const removeThingFromUser = (thing) => {
+  return async (dispatch) => {
+    const updatedThing = (await axios.put(`/api/things/${thing.id}`, thing))
+      .data;
+    dispatch({ type: "UPDATE_THING", thing: updatedThing });
+  };
+};
+const deleteUser = (user) => {
+  return async (dispatch) => {
+    await axios.delete(`/api/users/${user.id}`);
+    dispatch({ type: "DELETE_USER", user });
+  };
+};
 
 const store = createStore(reducer, applyMiddleware(logger, thunk));
 
-export { deleteThing, updateThing, createUser };
+export {
+  setView,
+  loadData,
+  createThing,
+  deleteThing,
+  updateThing,
+  createUser,
+  removeThingFromUser,
+  deleteUser,
+};
 
 export default store;
